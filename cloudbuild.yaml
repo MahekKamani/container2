@@ -1,0 +1,62 @@
+steps:
+  # Build the Docker image for container1
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/assignment3/container1:$COMMIT_SHA', './container1']
+
+  # Build the Docker image for container2
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/assignment3/container2:$COMMIT_SHA', './container2']
+
+  # Push the image for container1 to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'us-central1-docker.pkg.dev/$PROJECT_ID/assignment3/container1:$COMMIT_SHA']
+
+  # Push the image for container2 to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'us-central1-docker.pkg.dev/$PROJECT_ID/assignment3/container2:$COMMIT_SHA']
+
+  # Authenticate with your GKE cluster
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args: ['container', 'clusters', 'get-credentials', 'assignment-3', '--region', 'us-central1', '--project', '$PROJECT_ID']
+
+  - name: 'ubuntu'
+    args: ['sed', '-i', "s|:latest|:$COMMIT_SHA|g", 'kubernetes/container1.yaml']
+  
+  - name: 'ubuntu'
+    args: ['sed', '-i', "s|:latest|:$COMMIT_SHA|g", 'kubernetes/container2.yaml']
+
+  - name: 'gcr.io/cloud-builders/kubectl'
+    args: ['apply', '-f', 'kubernetes/pv-claim.yaml']
+    env:
+      - 'CLOUDSDK_COMPUTE_REGION=us-central1'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=assignment-3'
+
+  - name: 'gcr.io/cloud-builders/kubectl'
+    args: ['apply', '-f', 'kubernetes/container1.yaml']
+    env:
+      - 'CLOUDSDK_COMPUTE_REGION=us-central1'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=assignment-3'
+
+  - name: 'gcr.io/cloud-builders/kubectl'
+    args: ['apply', '-f', 'kubernetes/container2.yaml']
+    env:
+      - 'CLOUDSDK_COMPUTE_REGION=us-central1'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=assignment-3'
+
+  # Update the image for container1 in the Kubernetes Deployment
+  #- name: 'gcr.io/cloud-builders/kubectl'
+  #  args: ['set', 'image', 'deployment/container1', 'container1=us-central1-docker.pkg.dev/terraform-gke-test-453503/assignment3/container1:$COMMIT_SHA']
+  #  env:
+  #    - 'CLOUDSDK_COMPUTE_REGION=us-central1'
+  #    - 'CLOUDSDK_CONTAINER_CLUSTER=assignment-3'
+  
+  # Update the image for container2 in the Kubernetes Deployment
+  #- name: 'gcr.io/cloud-builders/kubectl'
+  #  args: ['set', 'image', 'deployment/container2', 'container2=us-central1-docker.pkg.dev/terraform-gke-test-453503/assignment3/container2:$COMMIT_SHA']
+  #  env:
+  #    - 'CLOUDSDK_COMPUTE_REGION=us-central1'
+   #   - 'CLOUDSDK_CONTAINER_CLUSTER=assignment-3'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+  substitutionOption: ALLOW_LOOSE
