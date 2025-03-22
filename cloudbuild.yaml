@@ -7,7 +7,7 @@ steps:
     args: ['push', 'us-central1-docker.pkg.dev/$PROJECT_ID/container2/container2:$COMMIT_SHA']
   # Authenticate with GKE cluster
   - name: 'gcr.io/cloud-builders/gcloud'
-    args: ['container', 'clusters', 'get-credentials', 'assignment-3', '--region', 'us-central1', '--project', '$PROJECT_ID']
+    args: ['container', 'clusters', 'get-credentials', 'assignment-3', '--zone', 'us-central1-c', '--project', '$PROJECT_ID']
   # Update image tag in container2.yaml
   - name: 'ubuntu'
     args: ['sed', '-i', "s|:latest|:$COMMIT_SHA|g", 'kubernetes/container2.yaml']
