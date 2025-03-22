@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: container2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: container2
+  template:
+    metadata:
+      labels:
+        app: container2
+    spec:
+      containers:
+      - name: container2
+        image: us-central1-docker.pkg.dev/terraform-gke-test-453503/container2/container2:latest
+        volumeMounts:
+        - mountPath: /mahek_PV_dir
+          name: pvc-claim
+        ports:
+        - containerPort: 7000
+      volumes:
+      - name: pvc-claim
+        persistentVolumeClaim:
+          claimName: pvc-claim
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: container2-service
+spec:
+  selector:
+    app: container2
+  ports:
+    - protocol: TCP
+      port: 7000
+      targetPort: 7000
+  type: ClusterIP
