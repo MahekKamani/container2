@@ -13,7 +13,7 @@ app.use(express.json());
 // POST endpoint to handle calculate requests.
 app.post('/process', async (req, res) => {
     const { file, product } = req.body;
-    console.log("holl");
+    console.log("hello");
     // Validate input
     if (!file || !product) {
         return res.status(400).json({ error: 'Invalid input: "file" and "product" parameters are required.' });
